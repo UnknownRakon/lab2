@@ -10,6 +10,7 @@ var insertValue = document.getElementById('insertValue')
 var deleteValue = document.getElementById('delete')
 var findByValue = document.getElementById('findByValue')
 var findByIndex = document.getElementById('findByIndex')
+var listSort = document.getElementById('listSort')
 
 var flag = 0
 var arr
@@ -85,6 +86,15 @@ findByIndex.onclick = () => {
         let index = parseFloat(prompt('На каком месте элемент?'))
         let result = list.findByIndex(index)
         console.log(result);
+    } else if (flag == 1) {
+        alert('Сначала сохраните массив')
+    } else alert('Сгерируйте и сохраните массив')
+}
+listSort.onclick = () => {
+    if (flag == 2) {
+        list.insertionSort()
+        let result = list.toArray()
+        console.table(result);
     } else if (flag == 1) {
         alert('Сначала сохраните массив')
     } else alert('Сгерируйте и сохраните массив')
@@ -297,25 +307,6 @@ class LinkedList {
         this.head = null;
         this.tail = null;
     }
-    // метод принимает значение в качестве аргумента и создаёт новый узел с этим значением, помещая его в начало связного списка
-    prepend(value) {
-        // Создаём новый узел, который будет новым head,
-        // при создании передаем второй аргумент, который указывает
-        // что его "next" будет текущий head,
-        // так как новый узел будет стоять перед текущем head.
-        const newNode = new LinkedListNode(value, this.head);
-
-        // Переназначаем head на новый узел
-        this.head = newNode;
-
-        // Если ещё нет tail, делаем новый узел tail.
-        if (!this.tail) {
-            this.tail = newNode;
-        }
-
-        // Возвращаем весь список.
-        return this;
-    }
     // метод принимает значение в качестве аргумента и создаёт новый узел с этим значением, помещая его в конец связного списка
     append(value) {
         // Создаём новый узел.
@@ -487,7 +478,6 @@ class LinkedList {
         }
 
         if (current) {
-            // Insert node here, make the child current.
             let child = new LinkedListNode(current.value);
             child.next = current.next;
 
@@ -495,13 +485,40 @@ class LinkedList {
             current.next = child;
         }
         else if (parent) {
-            // Insert node at end of list.
             parent.next = new LinkedListNode(data);
         }
         else {
-            // Create a new head.
             this.head = new LinkedList(data);
         }
         return this.head;
+    }
+    insertionSort() {
+        // Инициализируем сортированный список
+        var sorted = null;
+        var current = this.head;
+        // Перебираем список и добавляем каждую ноду в сортированный
+        while (current != null) {
+            // Сохраняем следующий элемент для следующей итерации
+            var next = current.next;
+            function sortedInsert(newnode) {
+                // Если пустой или больше чем новый
+                if (sorted == null || sorted.value >= newnode.value) {
+                    newnode.next = sorted;
+                    sorted = newnode;
+                } else {
+                    var current = sorted;
+                    // Найти узело перед точкой вставки
+                    while (current.next != null && current.next.value < newnode.value) {
+                        current = current.next;
+                    }
+                    newnode.next = current.next;
+                    current.next = newnode;
+                }
+            }
+            sortedInsert(current);
+            // Обновляем текущий элемент
+            current = next;
+        }
+        this.head = sorted;
     }
 }

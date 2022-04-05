@@ -7,6 +7,9 @@ var fast = document.getElementById('fast')
 var linked = document.getElementById('linked')
 var swap = document.getElementById('swap')
 var insertValue = document.getElementById('insertValue')
+var deleteValue = document.getElementById('delete')
+var findByValue = document.getElementById('findByValue')
+var findByIndex = document.getElementById('findByIndex')
 
 var flag = 0
 var arr
@@ -59,6 +62,35 @@ insertValue.onclick = () => {
     } else alert('Сгерируйте и сохраните массив')
 }
 
+deleteValue.onclick = () => {
+    if (flag == 2) {
+        let value = parseFloat(prompt('Что удалить?'))
+        list.delete(value)
+        console.table(list.toArray());
+    } else if (flag == 1) {
+        alert('Сначала сохраните массив')
+    } else alert('Сгерируйте и сохраните массив')
+}
+findByValue.onclick = () => {
+    if (flag == 2) {
+        let value = parseFloat(prompt('Что найти?'))
+        let index = list.findByValue(value)
+        console.log(index);
+    } else if (flag == 1) {
+        alert('Сначала сохраните массив')
+    } else alert('Сгерируйте и сохраните массив')
+}
+findByIndex.onclick = () => {
+    if (flag == 2) {
+        let index = parseFloat(prompt('На каком месте элемент?'))
+        let result = list.findByIndex(index)
+        console.log(result);
+    } else if (flag == 1) {
+        alert('Сначала сохраните массив')
+    } else alert('Сгерируйте и сохраните массив')
+}
+
+// Поменять местами в массиве
 function arrSwap(n1, n2) {
     let ind1 = arr.indexOf(n1)
     let ind2 = arr.indexOf(n2)
@@ -352,26 +384,36 @@ class LinkedList {
         return deletedNode;
     }
     // метод принимает значение в качестве аргумента, находит первый узел с таким же значением и возвращает его
-    find(value) {
+    findByValue(value) {
         // Если нет head значит список пуст.
         if (!this.head) {
-            return null;
+            return 'Список пуст';
         }
 
+        let arr = this.toArray()
+        let result = arr.findIndex((element) => {
+            if (element.value == value) {
+                return true
+            } else return false
+        })
+        if (result != -1) {
+            return `Данное значение имеет индекс ${result}`
+        } else return 'Такого значения нет'
+    }
+    findByIndex(index) {
         let currentNode = this.head;
+        let count = 0;
 
-        // Перебираем все узлы в поиске значения.
         while (currentNode) {
-            // Если указано значение, пробуем сравнить его по значению.
-            if (value !== undefined && currentNode.value === value) {
-                return currentNode;
+            if (count === index) {  // found the element
+                return `Такой индекс имеет элемент ${currentNode.value}`;
             }
 
-            // Перематываем на один узел вперед.
-            currentNode = currentNode.next;
+            count++;  // increment counter
+            currentNode = currentNode.next;  // move to next node
         }
 
-        return null;
+        return 'Такого элемента не существует';
     }
     // принимает массив значений в качестве аргумента и создаёт новые узлы из каждого элемента массива, по очереди добавляя их в конец списка
     fromArray(values) {

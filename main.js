@@ -11,6 +11,7 @@ var deleteValue = document.getElementById('delete')
 var findByValue = document.getElementById('findByValue')
 var findByIndex = document.getElementById('findByIndex')
 var listSort = document.getElementById('listSort')
+var doublylinked = document.getElementById('doublylinked')
 
 var flag = 0
 var arr
@@ -95,6 +96,17 @@ listSort.onclick = () => {
         list.insertionSort()
         let result = list.toArray()
         console.table(result);
+    } else if (flag == 1) {
+        alert('Сначала сохраните массив')
+    } else alert('Сгерируйте и сохраните массив')
+}
+
+// Создание двусвязного списка
+doublylinked.onclick = () => {
+    if (flag == 2) {
+        list = new DoublyLinkedList()
+        list.fromArray(arr)
+        console.table(list.toArray());
     } else if (flag == 1) {
         alert('Сначала сохраните массив')
     } else alert('Сгерируйте и сохраните массив')
@@ -520,5 +532,296 @@ class LinkedList {
             current = next;
         }
         this.head = sorted;
+    }
+}
+// Элемент двусвязно списка
+class DoublyLinkedListNode {
+    constructor(value, next = null, previous = null) {
+        this.value = value;
+        this.next = next;
+        this.previous = previous;
+    }
+
+    toString(callback) {
+        return callback ? callback(this.value) : `${this.value}`;
+    }
+}
+// Двусвязный список
+class DoublyLinkedList {
+    constructor() {
+        this.head = null;
+        this.tail = null;
+    }
+    append(value) {
+        // Создаём новый узел.
+        const newNode = new DoublyLinkedListNode(value);
+
+        if (this.tail) {
+            // Присоединяем новый узел к концу связного списка.
+            this.tail.next = newNode;
+        }
+
+        // В новом узле указываем ссылку на предыдущий (previous) элемент на this.tail,
+        // так как новый узел будет теперь последним.
+        newNode.previous = this.tail;
+
+        // Переназначаем tail на новый узел.
+        this.tail = newNode;
+
+        // Если ещё нет head, делаем новый узел head.
+        if (!this.head) {
+            this.head = newNode;
+        }
+
+        return this;
+    }
+    prepend(value) {
+        // Создаём новый узел, который будет новым head,
+        // при создании передаём второй аргумент, который указывает
+        // что его "next" будет текущий head,
+        // так как новый узел будет стоять перед текущем head.
+        const newNode = new DoublyLinkedListNode(value, this.head);
+
+        // Если есть head, то он больше не будет head.
+        // Поэтому, его ссылку на предыдущий узел (previous) меняем на новый узел.
+        if (this.head) {
+            this.head.previous = newNode;
+        }
+
+        // Переназначаем head на новый узел
+        this.head = newNode;
+
+        // Если ещё нет tail, делаем новый узел tail.
+        if (!this.tail) {
+            this.tail = newNode;
+        }
+
+        // Возвращаем весь список.
+        return this;
+    }
+    delete(value) {
+        // Если нет head значит список пуст.
+        if (!this.head) {
+            return null;
+        }
+
+        let deletedNode = null;
+        let currentNode = this.head;
+
+        // Перебираем все узлы и удаляем их, если их значение равно указанному.
+        while (currentNode) {
+            if (currentNode.value === value) {
+                // Сохраняем значение текущего узла как удаленное.
+                deletedNode = currentNode;
+
+                // Если head должен быть удален,
+                if (deletedNode === this.head) {
+                    // то делаем следующий узел новым head
+                    this.head = deletedNode.next;
+
+                    // Меняем в новом head ссылку (previous) на null.
+                    if (this.head) {
+                        this.head.previous = null;
+                    }
+
+                    // Если все узлы в списке имеют одинаковое значение,
+                    // которое передается в качестве аргумента,
+                    // тогда все узлы будут удалены. Поэтому tail необходимо обновить.
+                    if (deletedNode === this.tail) {
+                        this.tail = null;
+                    }
+                } else if (deletedNode === this.tail) {
+                    // Если tail должен быть удален, -
+                    // меняем tail на предпоследний узел, который станет новым хвостом.
+                    this.tail = deletedNode.previous;
+                    // Обновляем ссылку next в новом хвосте.
+                    this.tail.next = null;
+                } else {
+                    // Если средний узел будет удален, -
+                    // сохраняем ссылку на предыдущий элемент,
+                    const previousNode = deletedNode.previous;
+                    // и сохраняем ссылку на следующий элемент.
+                    const nextNode = deletedNode.next;
+                    // Меняем ссылки у предыдущего и следующего узлов от удаленного узла,
+                    // чтобы они больше не ссылались на удаленный узел.
+                    previousNode.next = nextNode;
+                    nextNode.previous = previousNode;
+                }
+            }
+
+            // Перематываем на один узел вперёд.
+            currentNode = currentNode.next;
+        }
+
+        return deletedNode;
+    }
+    // Создаём новые узлы из массива и добавляем в конец списка.
+    fromArray(values) {
+        values.forEach(value => this.append(value));
+        return this;
+    }
+    // Создаём массив из всех узлов.
+    toArray() {
+        const nodes = [];
+
+        let currentNode = this.head;
+
+        // Перебираем все узлы и добавляем в массив.
+        while (currentNode) {
+            nodes.push({
+                previous: !!currentNode.previous ? currentNode.previous.value : null,
+                value: currentNode.value,
+                next: !!currentNode.next ? currentNode.next.value : null
+            });
+            currentNode = currentNode.next;
+        }
+
+        // Возвращаем массив из всех узлов.
+        return nodes;
+    }
+    // метод находит два элемента по значению и меняет их местами
+    swap(n1, n2) {
+        var prevNode1 = null, prevNode2 = null, node1 = this.head, node2 = this.head;
+        // Если список пустой, выходим
+        if (this.head == null) {
+            return;
+        }
+        // Если значения одинаковы, список не изменится
+        if (n1 == n2)
+            return;
+        // Ищем первый элемент
+        while (node1 != null && node1.value != n1) {
+            node1 = node1.next;
+        }
+        // Ищем второй элемент
+        while (node2 != null && node2.value != n2) {
+            node2 = node2.next;
+        }
+        if (node1 != null && node2 != null) {
+            // Если элемент, предществующий элементу 1 не null, то меняем его next на элемент 2
+            let prev1 = node1.previous
+            let prev2 = node2.previous
+
+            if (prev1 != null) {
+                prev1.next = node2
+                node2.previous = prev1
+            } else {
+                this.head = node2;
+                node2.previous = null
+            }
+            // Если элемент, предществующий элементу 2 не null, то меняем его next на элемент 1
+            if (prev2 != null) {
+                prev2.next = node1;
+                node1.previous = prev2;
+            } else {
+                this.head = node1;
+                node1.previous = null;
+            }
+            // Меняем местами поля next у элемента 1 и 2
+            [node1.next, node2.next] = [node2.next, node1.next]
+        } else {
+            alert('Перестановка не возможна')
+        }
+    }
+    insert(value, index) {
+        if (!Number.isInteger(index) || index < 0 || index > this.toArray().length + 1) {
+            console.log('Некоректный индекс');
+            return this;
+        }
+
+        if (index === 0) {
+            this.prepend(value);
+            return this;
+        }
+
+        // If index is equal to this.length, append
+        if (index === this.toArray().length) {
+            this.append(value);
+            return this;
+        }
+
+        // Reach the node at that index
+        let newNode = new DoublyLinkedListNode(value);
+        let previousNode = this.head;
+
+        for (let k = 0; k < index - 1; k++) {
+            previousNode = previousNode.next;
+        }
+
+        let nextNode = previousNode.next;
+
+        newNode.next = nextNode;
+        previousNode.next = newNode;
+        newNode.previous = previousNode;
+        nextNode.previous = newNode;
+
+        return this
+    }
+    findByValue(value) {
+        // Если нет head значит список пуст.
+        if (!this.head) {
+            return 'Список пуст';
+        }
+
+        let arr = this.toArray()
+        let result = arr.findIndex((element) => {
+            if (element.value == value) {
+                return true
+            } else return false
+        })
+        if (result != -1) {
+            return `Данное значение имеет индекс ${result}`
+        } else return 'Такого значения нет'
+    }
+    findByIndex(index) {
+        let currentNode = this.head;
+        let count = 0;
+
+        while (currentNode) {
+            if (count === index) {  // found the element
+                return `Такой индекс имеет элемент ${currentNode.value}`;
+            }
+
+            count++;  // increment counter
+            currentNode = currentNode.next;  // move to next node
+        }
+
+        return 'Такого элемента не существует';
+    }
+    insertionSort() {
+        let sorted = null;
+
+        let current = this.head;
+        while (current != null) {
+
+            let next = current.next;
+            current.previous = current.next = null;
+
+            function sortedInsert(head_ref, newNode) {
+                let current;
+                if (head_ref == null)
+                    head_ref = newNode;
+                else if ((head_ref).value >= newNode.value) {
+                    newNode.next = head_ref;
+                    newNode.next.previous = newNode;
+                    head_ref = newNode;
+                }
+                else {
+                    current = head_ref;
+                    while (current.next != null && current.next.value < newNode.value)
+                        current = current.next;
+                    newNode.next = current.next;
+                    if (current.next != null)
+                        newNode.next.previous = newNode;
+                    current.next = newNode;
+                    newNode.previous = current;
+                }
+                return head_ref;
+            }
+            sorted = sortedInsert(sorted, current);
+            current = next;
+        }
+        this.head = sorted;
+        return this.head;
     }
 }
